@@ -16,7 +16,7 @@ previous_schedule_file = st.file_uploader("（可选）上传上月排班统计�
 
 st.sidebar.header("排班设置")
 start_date = st.sidebar.date_input("起始日期", value=datetime.today())
-weeks_to_schedule = st.sidebar.number_input("排班周数", min_value=4, max_value=12, value=4)
+weeks_to_schedule = st.sidebar.number_input("排班周数", min_value=1, max_value=12, value=4)
 
 morning_count = st.sidebar.number_input("每周早班人數", min_value=1, max_value=30, value=10)
 evening_count = st.sidebar.number_input("每周晚班人數", min_value=1, max_value=30, value=10)
