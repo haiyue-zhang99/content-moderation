@@ -3,3 +3,4 @@ pandas
 jieba
 openpyxl
 wordcloud
+streamlit_option_menu
