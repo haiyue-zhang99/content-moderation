@@ -367,8 +367,8 @@ elif selected == "编辑加分统计":
             for day in days:
                 simple_qty = safe_float(row.get(f"{day}简单列表数量", None))
                 simple_time = safe_float(row.get(f"{day}简单列表时长", None))
-                complex_qty = safe_float(row.get(f"{day}一般+优质列表数量", None))
-                complex_time = safe_float(row.get(f"{day}一般+优质列表时长", None))
+                complex_qty = safe_float(row.get(f"{day}其他列表数量", None))
+                complex_time = safe_float(row.get(f"{day}其他列表时长", None))
                 simple_valid = is_valid_number(simple_qty) and is_valid_number(simple_time)
                 complex_valid = is_valid_number(complex_qty) and is_valid_number(complex_time)
                 simple_avg = simple_qty / simple_time if simple_valid else None
@@ -391,7 +391,7 @@ elif selected == "编辑加分统计":
                         score = -1
                 total_score += score
                 row_result[f'{day}简单列表时均'] = round(simple_avg, 2) if simple_avg is not None else ''
-                row_result[f'{day}一般+优质列表时均'] = round(complex_avg, 2) if complex_avg is not None else ''
+                row_result[f'{day}其他列表时均'] = round(complex_avg, 2) if complex_avg is not None else ''
                 row_result[f'{day}加扣分'] = score
             row_result['总分'] = total_score
             results.append(row_result)
@@ -421,4 +421,5 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
 
