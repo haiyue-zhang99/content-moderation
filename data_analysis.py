@@ -297,7 +297,7 @@ if selected == "审核数据统计":
             words.extend(filtered_words)
         word_freq = Counter(words)
         if word_freq:
-            wc = WordCloud(font_path="msyh.ttc", width=800, height=400, background_color="white")
+            wc = WordCloud(font_path="MSYH.TTC", width=800, height=400, background_color="white")
             wc.generate_from_frequencies(word_freq)
             fig, ax = plt.subplots(figsize=(10, 5))
             ax.imshow(wc, interpolation="bilinear")
@@ -421,3 +421,4 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
