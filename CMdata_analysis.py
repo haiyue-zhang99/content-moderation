@@ -411,14 +411,14 @@ elif selected == "编辑加分统计":
                     elif complex_avg < 153.75:
                         score = -1
                 elif simple_valid and not complex_valid:
-                    if simple_avg >= 348:
+                    if simple_avg >= 347.5:
                         score = 1
-                    elif simple_avg < 318:
+                    elif simple_avg < 317.5:
                         score = -1
                 elif simple_valid and complex_valid:
-                    if simple_avg >= 348 and complex_avg >= 160:
+                    if simple_avg >= 347.5 and complex_avg >= 160:
                         score = 1
-                    elif simple_avg < 318 or complex_avg < 153.75:
+                    elif simple_avg < 317.5 or complex_avg < 153.75:
                         score = -1
                 total_score += score
                 row_result[f'{day}简单列表时均'] = round(simple_avg, 2) if simple_avg is not None else ''
@@ -452,4 +452,5 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
 
