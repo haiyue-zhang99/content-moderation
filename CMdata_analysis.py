@@ -349,10 +349,10 @@ elif selected == "编辑加分统计":
             df2 = pd.read_excel(uploaded_file2, engine='openpyxl')
             required_cols = ['审核人员']
             # 动态判断所有天的“简单列表数量”等列是否存在
-            day_cols = [col for col in df2.columns if "简单列表数量" in col or "一般+优质列表数量" in col]
+            day_cols = [col for col in df2.columns if "简单列表数量" in col or "一般+优质列表数量" in col or "视频列表数量" in col]
             if not day_cols:
                 st.session_state["df2"] = None
-                st.error("❌ 上传文件不符合要求，缺少“简单列表数量”或“一般+优质列表数量”相关字段，请重新上传。")
+                st.error("❌ 上传文件不符合要求，缺少“简单列表数量”或“一般+优质列表数量”或“视频列表数量”相关字段，请重新上传。")
             elif any(col not in df2.columns for col in required_cols):
                 st.session_state["df2"] = None
                 st.error("❌ 上传文件不符合要求，缺少“审核人员”字段，请重新上传。")
@@ -400,29 +400,54 @@ elif selected == "编辑加分统计":
                 simple_time = safe_float(row.get(f"{day}简单列表时长", None))
                 complex_qty = safe_float(row.get(f"{day}一般+优质列表数量", None))
                 complex_time = safe_float(row.get(f"{day}一般+优质列表时长", None))
+                video_qty = safe_float(row.get(f"{day}视频列表数量", None))
+                video_time = safe_float(row.get(f"{day}视频列表时长", None))
                 simple_valid = is_valid_number(simple_qty) and is_valid_number(simple_time)
                 complex_valid = is_valid_number(complex_qty) and is_valid_number(complex_time)
+                video_valid = is_valid_number(video_qty) and is_valid_number(video_time)
                 simple_avg = simple_qty / simple_time if simple_valid else None
                 complex_avg = complex_qty / complex_time if complex_valid else None
+                video_avg = video_qty / video_time if video_valid else None
                 score = 0
-                if complex_valid and not simple_valid:
+                if simple_valid and complex_valid and video_valid:
+                    if simple_avg >= 348 and complex_avg >= 160 and video_avg >= 160:
+                        score = 1
+                    elif simple_avg < 318 or complex_avg < 153.75 or video_avg < 153.75:
+                        score = -1
+                elif simple_valid and complex_valid and not video_valid:
+                   if simple_avg >= 348 and complex_avg >= 160:
+                        score = 1
+                   elif simple_avg < 318 or complex_avg < 153.75:
+                        score = -1
+                elif simple_valid and video_valid and not complex_valid:
+                    if simple_avg >= 348 and video_avg >= 160:
+                        score = 1
+                    elif simple_avg < 318 or video_avg < 153.75:
+                        score = -1
+                elif complex_valid and video_valid and not simple_valid:
+                    if complex_avg >= 160 and video_avg >= 160:
+                        score = 1
+                    elif complex_avg < 153.75 or video_avg < 153.75:
+                        score = -1
+                elif simple_valid and not complex_valid and not video_valid:
+                    if simple_avg >= 348:
+                        score = 1
+                    elif simple_avg < 318:
+                        score = -1
+                elif complex_valid and not simple_valid and not video_valid:
                     if complex_avg >= 160:
                         score = 1
                     elif complex_avg < 153.75:
                         score = -1
-                elif simple_valid and not complex_valid:
-                    if simple_avg >= 347.5:
+                elif video_valid and not simple_valid and not complex_valid:
+                    if video_avg >= 160:
                         score = 1
-                    elif simple_avg < 317.5:
-                        score = -1
-                elif simple_valid and complex_valid:
-                    if simple_avg >= 347.5 and complex_avg >= 160:
-                        score = 1
-                    elif simple_avg < 317.5 or complex_avg < 153.75:
+                    elif video_avg < 153.75:
                         score = -1
                 total_score += score
                 row_result[f'{day}简单列表时均'] = round(simple_avg, 2) if simple_avg is not None else ''
                 row_result[f'{day}一般+优质列表时均'] = round(complex_avg, 2) if complex_avg is not None else ''
+                row_result[f'{day}视频列表时均'] = round(video_avg, 2) if video_avg is not None else ''
                 row_result[f'{day}加扣分'] = score
             row_result['总分'] = total_score
             results.append(row_result)
@@ -452,5 +477,6 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
 
 
