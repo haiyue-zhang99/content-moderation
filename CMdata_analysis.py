@@ -122,12 +122,15 @@ if selected == "审核数据统计":
         stat1 = []
         for email in email_order:
             user_data = df1[df1['Requester'] == email]
-            simple_count = user_data[user_data['RankList'].str.contains('简单列表', na=False)].shape[0]
-            general_quality_count = user_data[user_data['RankList'].str.contains('一般列表|优质列表|视频列表', na=False)].shape[0]
+            simple_count = user_data[user_data['RankList'].str.contains('图文简单列表', na=False)].shape[0]
+            general_quality_count = user_data[user_data['RankList'].str.contains('图文一般列表|图文优质列表', na=False)].shape[0]
+            video_count = user_data[user_data['RankList'].str.contains('视频一般列表|视频高优列表', na=False)].shape[0]
             stat1.append({
                 '审核人员': email,
                 '简单列表数量': simple_count,
-                '其他列表数量': general_quality_count
+                '其他列表数量': general_quality_count,
+                '视频列表数量': video_count,
+
             })
         stat1_df1 = pd.DataFrame(stat1)
         st.markdown('<hr style="border:1px solid #e3eaf2;">', unsafe_allow_html=True)
@@ -477,6 +480,7 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
 
 
 
