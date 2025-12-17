@@ -413,9 +413,9 @@ elif selected == "编辑加分统计":
                 video_avg = video_qty / video_time if video_valid else None
                 score = 0
                 if simple_valid and complex_valid and video_valid:
-                    if simple_avg >= 348 and complex_avg >= 160 and video_avg >= 160:
+                    if simple_avg >= 348 and complex_avg >= 160 and video_avg >= 187.5:
                         score = 1
-                    elif simple_avg < 318 or complex_avg < 153.75 or video_avg < 153.75:
+                    elif simple_avg < 318 or complex_avg < 153.75 or video_avg < 185:
                         score = -1
                 elif simple_valid and complex_valid and not video_valid:
                    if simple_avg >= 348 and complex_avg >= 160:
@@ -423,14 +423,14 @@ elif selected == "编辑加分统计":
                    elif simple_avg < 318 or complex_avg < 153.75:
                         score = -1
                 elif simple_valid and video_valid and not complex_valid:
-                    if simple_avg >= 348 and video_avg >= 160:
+                    if simple_avg >= 348 and video_avg >= 187.5:
                         score = 1
-                    elif simple_avg < 318 or video_avg < 153.75:
+                    elif simple_avg < 318 or video_avg < 185:
                         score = -1
                 elif complex_valid and video_valid and not simple_valid:
-                    if complex_avg >= 160 and video_avg >= 160:
+                    if complex_avg >= 160 and video_avg >= 187.5:
                         score = 1
-                    elif complex_avg < 153.75 or video_avg < 153.75:
+                    elif complex_avg < 153.75 or video_avg < 185:
                         score = -1
                 elif simple_valid and not complex_valid and not video_valid:
                     if simple_avg >= 348:
@@ -480,6 +480,7 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
 
 
 
