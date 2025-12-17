@@ -443,9 +443,9 @@ elif selected == "编辑加分统计":
                     elif complex_avg < 153.75:
                         score = -1
                 elif video_valid and not simple_valid and not complex_valid:
-                    if video_avg >= 160:
+                    if video_avg >= 187.5:
                         score = 1
-                    elif video_avg < 153.75:
+                    elif video_avg < 185:
                         score = -1
                 total_score += score
                 row_result[f'{day}简单列表时均'] = round(simple_avg, 2) if simple_avg is not None else ''
@@ -480,6 +480,7 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
 
 
 
