@@ -497,9 +497,9 @@ elif selected == "编辑加分统计":
                 video_avg = video_qty / video_time if video_valid else None
                 score = 0
                 if simple_valid and complex_valid and video_valid:
-                    if simple_avg >= 348 and complex_avg >= 160 and video_avg >= 187.5:
+                    if simple_avg >= 348 and complex_avg >= 160 and video_avg >= 210:
                         score = 1
-                    elif simple_avg < 318 or complex_avg < 153.75 or video_avg < 185:
+                    elif simple_avg < 318 or complex_avg < 153.75 or video_avg < 200:
                         score = -1
                 elif simple_valid and complex_valid and not video_valid:
                    if simple_avg >= 348 and complex_avg >= 160:
@@ -507,14 +507,14 @@ elif selected == "编辑加分统计":
                    elif simple_avg < 318 or complex_avg < 153.75:
                         score = -1
                 elif simple_valid and video_valid and not complex_valid:
-                    if simple_avg >= 348 and video_avg >= 187.5:
+                    if simple_avg >= 348 and video_avg >= 210:
                         score = 1
-                    elif simple_avg < 318 or video_avg < 185:
+                    elif simple_avg < 318 or video_avg < 200:
                         score = -1
                 elif complex_valid and video_valid and not simple_valid:
-                    if complex_avg >= 160 and video_avg >= 187.5:
+                    if complex_avg >= 160 and video_avg >= 210:
                         score = 1
-                    elif complex_avg < 153.75 or video_avg < 185:
+                    elif complex_avg < 153.75 or video_avg < 200:
                         score = -1
                 elif simple_valid and not complex_valid and not video_valid:
                     if simple_avg >= 348:
@@ -527,9 +527,9 @@ elif selected == "编辑加分统计":
                     elif complex_avg < 153.75:
                         score = -1
                 elif video_valid and not simple_valid and not complex_valid:
-                    if video_avg >= 187.5:
+                    if video_avg >= 210:
                         score = 1
-                    elif video_avg < 185:
+                    elif video_avg < 200:
                         score = -1
                 total_score += score
                 row_result[f'{day}简单列表时均'] = round(simple_avg, 2) if simple_avg is not None else ''
@@ -564,5 +564,6 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
 
 
