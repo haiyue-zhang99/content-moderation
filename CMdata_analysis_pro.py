@@ -198,7 +198,7 @@ if selected == "审核数据统计":
         email_order = [
             "v-qingqinghe@microsoft.com", "v-yangyang5@microsoft.com", "v-qiangwei@microsoft.com", "v-cwen@microsoft.com",
             "v-yuehan@microsoft.com", "v-shuagao@microsoft.com", "v-xiyuan1@microsoft.com", "v-xuelyang@microsoft.com",
-            "v-wenlchen@microsoft.com", "v-tengpan@microsoft.com","v-qinjiang@microsoft.com","v-yancche@microsoft.com",
+            "v-tengpan@microsoft.com","v-qinjiang@microsoft.com","v-yancche@microsoft.com",
             "v-dandanli@microsoft.com", "v-yuanjunli@microsoft.com","v-yuqincheng@microsoft.com", "v-wangjua@microsoft.com", 
             "v-qingkzhang@microsoft.com","v-minshi1@microsoft.com", "v-hengma@microsoft.com", "v-yingxli@microsoft.com", 
             "v-peilirao@microsoft.com","v-jiangqia@microsoft.com", "v-chaozhao@microsoft.com", "v-yuleiwu@microsoft.com",
@@ -564,6 +564,7 @@ st.markdown("""
         Powered by Streamlit
     </div>
 """, unsafe_allow_html=True)
+
 
 
 
