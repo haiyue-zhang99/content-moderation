@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>学习管理工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
+            background: #f0f7ff;
+            margin: 0;
+            padding: 0;
+            color: #1e293b;
+        }
+        .header {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            position: relative;
+        }
+        .header h1 { margin: 0; font-size: 1.6rem; }
+        .header p { margin: 5px 0 0; opacity: 0.9; font-size: 0.8rem; }
+        .header-buttons {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 8px;
+        }
+        .header-buttons button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .study-controls {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .study-controls button {
+            background: #fbbf24;
+            color: #1e293b;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .study-controls button:last-child { background: #ef4444; color: white; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+        .tab-btn.active { background: #3b82f6; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        button {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button.secondary { background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; }
+        button.small { padding: 5px 12px; font-size: 0.75rem; }
+        button.danger { background: #ef4444; }
+        button.success { background: #22c55e; }
+        input, select {
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.85rem;
+            background: white;
+            outline: none;
+        }
+        .multi-select {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .multi-select-title {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .multi-select-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .multi-select-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+        }
+        .multi-select-option input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            cursor: pointer;
+        }
+        .subject-item, .task-item, .reward-item {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 20px;
+            height: 8px;
+            flex: 1;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #3b82f6;
+            width: 0%;
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .points-display {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .points-number { font-size: 2.5rem; font-weight: 800; color: #f97316; }
+        .badges-wall {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .badge-card {
+            background: linear-gradient(135deg, #fef9c3, #fde047);
+            border-radius: 20px;
+            padding: 12px;
+            text-align: center;
+            min-width: 120px;
+            flex: 1;
+        }
+        .badge-card.locked { background: #e2e8f0; opacity: 0.6; }
+        .badge-icon { font-size: 2rem; margin-bottom: 8px; }
+        .badge-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; }
+        .badge-progress-bar {
+            background: #e2e8f0;
+            border-radius: 20px;
+            height: 6px;
+            overflow: hidden;
+            margin: 4px 0;
+        }
+        .badge-progress-fill { background: #3b82f6; width: 0%; height: 100%; }
+        .reminder-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            z-index: 2000;
+            font-size: 0.85rem;
+        }
+        .empty-state { text-align: center; padding: 30px; color: #94a3b8; }
+        
+        /* 课表样式 - 确保正常排列 */
+        .timetable {
+            background: white;
+            border-radius: 20px;
+            overflow-x: auto;
+            width: 100%;
+        }
+        .timetable table {
+            width: 100%;
+            min-width: 700px;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .timetable th {
+            background: #f8fafc;
+            padding: 12px 8px;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: center;
+        }
+        .timetable td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            background: white;
+            width: 14.28%;
+        }
+        .task-cell {
+            background: #f8fafc;
+            margin-bottom: 8px;
+            padding: 8px 8px;
+            border-radius: 12px;
+            position: relative;
+            border-left: 3px solid #3b82f6;
+        }
+        .task-subject {
+            font-weight: 700;
+            color: #3b82f6;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+        .task-desc {
+            color: #475569;
+            font-size: 0.75rem;
+            margin: 4px 0;
+            word-break: break-word;
+        }
+        .task-time {
+            color: #f97316;
+            font-size: 0.7rem;
+            background: #fff3e0;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .task-count {
+            color: #22c55e;
+            font-size: 0.7rem;
+            background: #dcfce7;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-left: 6px;
+        }
+        .delete-task-icon {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #cbd5e1;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 2px 4px;
+            border-radius: 12px;
+        }
+        .delete-task-icon:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+        
+        .add-task-form {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 120px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .batch-preview {
+            background: #e2e8f0;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+        .drag-handle { cursor: grab; color: #94a3b8; font-size: 1.2rem; margin-right: 8px; }
+        .task-item.dragging { opacity: 0.5; }
+        .task-item.rest-task { background: #fff3e0; border-left: 4px solid #f97316; }
+        .task-item.locked { opacity: 0.6; pointer-events: none; }
+        .category-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; margin-left: 6px; }
+        .category-math { background: #dbeafe; color: #1e40af; }
+        .category-chinese { background: #dcfce7; color: #166534; }
+        .category-english { background: #fed7aa; color: #9a3412; }
+        .count-checkbox { display: flex; align-items: center; gap: 8px; }
+        .count-checkbox input { width: 18px; height: 18px; margin: 0; }
+        .confirm-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+        .confirm-content {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+        }
+        .color-picker { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .color-option { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-option.selected { border-color: #1e293b; transform: scale(1.1); }
+        .icon-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .icon-option { font-size: 1.5rem; cursor: pointer; padding: 4px; border-radius: 8px; }
+        .icon-option.selected { background: #e2e8f0; }
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .study-controls, .header-buttons { position: static; transform: none; margin-top: 10px; justify-content: center; }
+            .header { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+            .form-row { flex-direction: column; align-items: stretch; }
+            .timetable table { min-width: 560px; }
+            .timetable td { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="study-controls">
+            <button id="globalStartStudy">▶ 开始学习</button>
+            <button id="globalStopStudy">⏹️ 结束学习</button>
+        </div>
+        <h1>📚 学习管理工具</h1>
+        <p>记录学习 · 激励成长</p>
+        <div class="header-buttons">
+            <button id="exportDataBtn">📤 导出数据</button>
+            <button id="importDataBtn">📥 导入数据</button>
+            <input type="file" id="importFile" accept=".json" style="display:none;">
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tab1">📚 科目目标</button>
+            <button class="tab-btn" data-tab="tab2">📋 今日任务</button>
+            <button class="tab-btn" data-tab="tab3">📊 学情分析</button>
+            <button class="tab-btn" data-tab="tab4">🎁 积分奖励</button>
+        </div>
+
+        <!-- 标签页1：科目目标 -->
+        <div class="tab-content active" id="tab1">
+            <div class="card">
+                <div class="card-header">📚 我的学习科目</div>
+                <div id="subjectsList"></div>
+                <div class="grid-3" style="margin-top: 16px;">
+                    <input type="text" id="newSubjectName" placeholder="科目名称">
+                    <select id="newSubjectCategory"><option value="math">🧮 数学类</option><option value="chinese">📖 语文类</option><option value="english">🇬🇧 英语类</option></select>
+                    <input type="text" id="newSubjectUnit" placeholder="单位 (如: 篇、题、页)">
+                    <input type="number" id="newSubjectTarget" placeholder="目标数量">
+                    <button id="addSubjectBtn">➕ 添加科目</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">📅 每周任务设置</div>
+                <div class="add-task-form">
+                    <div class="form-row">
+                        <!-- 日期多选 -->
+                        <div class="form-group">
+                            <label>📅 日期 (可多选)</label>
+                            <div class="multi-select">
+                                <div class="multi-select-title">
+                                    <span>选择星期</span>
+                                    <button type="button" class="small secondary" id="selectAllDays">全选</button>
+                                </div>
+                                <div class="multi-select-options" id="dayOptions">
+                                    <label class="multi-select-option"><input type="checkbox" value="0"> 周日</label>
+                                    <label class="multi-select-option"><input type="checkbox" value="1"> 周一</label>
+                                    <label class="multi-select-option"><input type="checkbox" value="2"> 周二</label>
+                                    <label class="multi-select-option"><input type="checkbox" value="3"> 周三</label>
+                                    <label class="multi-select-option"><input type="checkbox" value="4"> 周四</label>
+                                    <label class="multi-select-option"><input type="checkbox" value="5"> 周五</label>
+                                    <label class="multi-select-option"><input type="checkbox" value="6"> 周六</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 科目多选 -->
+                        <div class="form-group">
+                            <label>📚 科目 (可多选)</label>
+                            <div class="multi-select">
+                                <div class="multi-select-title">
+                                    <span>选择科目</span>
+                                    <button type="button" class="small secondary" id="selectAllSubjects">全选</button>
+                                </div>
+                                <div class="multi-select-options" id="subjectOptions"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>📝 任务描述</label>
+                            <input type="text" id="taskDesc" placeholder="如: 阅读理解">
+                        </div>
+                        <div class="form-group">
+                            <label>⏱️ 时间(分钟)</label>
+                            <select id="taskTime">
+                                <option value="10">10分钟</option><option value="15">15分钟</option><option value="20">20分钟</option>
+                                <option value="25">25分钟</option><option value="30">30分钟</option><option value="40">40分钟</option>
+                                <option value="45">45分钟</option><option value="60">60分钟</option>
+                            </select>
+                        </div>
+                        <div class="form-group count-checkbox">
+                            <label>📊 计入数量进度</label>
+                            <input type="checkbox" id="taskHasCount">
+                        </div>
+                        <div class="form-group" id="countAmountGroup" style="display:none;">
+                            <label>📈 完成数量</label>
+                            <input type="number" id="taskCountAmount" value="1" min="0.5" step="0.5">
+                        </div>
+                        <button id="addTaskBtn">➕ 批量添加</button>
+                    </div>
+                    <div id="batchPreview" class="batch-preview" style="display:none;"></div>
+                </div>
+                <button id="clearAllTasksBtn" class="secondary small">清空所有任务</button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">📅 每周课表</div>
+                <div id="timetableContainer" class="timetable"></div>
+            </div>
+        </div>
+
+        <!-- 标签页2：今日任务 -->
+        <div class="tab-content" id="tab2">
+            <div class="card">
+                <div class="card-header"><span>📋 今日学习任务 · <span id="todayDate"></span> <span id="todayWeekday"></span></span><div><button id="addRestTaskBtn" class="small" style="background:#f97316;">☕ 添加休息</button><button id="resetOrderBtn" class="small secondary">↺ 重置顺序</button></div></div>
+                <div id="todayTasksContainer"></div>
+                <div style="margin-top: 16px; background:#f1f5f9; border-radius: 20px; padding: 14px;"><div class="flex-between"><span>📊 今日完成率 <span id="completionDetail" style="font-size:0.75rem;"></span></span><span id="completionRateText">0%</span></div><div class="progress-bar"><div class="progress-fill" id="completionFill"></div></div></div>
+            </div>
+        </div>
+
+        <!-- 标签页3：学情分析 -->
+        <div class="tab-content" id="tab3">
+            <div class="card"><div class="card-header">⏱️ 每日学习时间趋势</div><canvas id="dailyStudyChart" style="max-height: 280px;"></canvas></div>
+            <div class="grid-2"><div class="card"><div class="card-header">📈 每日任务完成率趋势</div><canvas id="completionRateChart" style="max-height: 250px;"></canvas></div><div class="card"><div class="card-header">✅ 每日完成任务数量</div><canvas id="completedTasksChart" style="max-height: 250px;"></canvas></div></div>
+            <div class="card"><div class="card-header">📊 学科分类投入分析</div><div class="grid-2"><div><canvas id="categoryProgressChart" style="max-height: 280px;"></canvas><p style="text-align:center; font-size:0.7rem;">各学科分类完成进度</p></div><div><canvas id="categoryTimeChart" style="max-height: 280px;"></canvas><p style="text-align:center; font-size:0.7rem;">各学科分类时间投入占比</p></div></div></div>
+            <div class="card"><div class="card-header">📋 具体科目投入明细</div><div class="grid-2"><div><canvas id="subjectProgressDetailChart" style="max-height: 280px;"></canvas><p style="text-align:center; font-size:0.7rem;">各科目完成进度</p></div><div><canvas id="subjectTimeDetailChart" style="max-height: 280px;"></canvas><p style="text-align:center; font-size:0.7rem;">各科目时间投入(分钟)</p></div></div></div>
+            <div class="card"><div class="card-header">📝 考试成绩追踪</div><div class="grid-2"><div><div class="flex-between" style="margin-bottom:12px;"><select id="scoreSubjectSelect" style="flex:2"></select><input type="number" id="scoreValue" placeholder="分数" style="flex:1"><button id="addScoreBtn">记录</button></div><div id="scoresList"></div></div><div><canvas id="scoreTrendChart" style="max-height: 220px;"></canvas><div class="flex-between" style="margin-top:12px;"><button id="scoreMathBtn" class="small secondary">数学类</button><button id="scoreChineseBtn" class="small secondary">语文类</button><button id="scoreEnglishBtn" class="small secondary">英语类</button></div></div></div></div>
+        </div>
+
+        <!-- 标签页4：积分奖励 -->
+        <div class="tab-content" id="tab4">
+            <div class="points-display"><div>🏆 当前总积分</div><div class="points-number" id="totalPointsDisplay">0</div><div class="flex-between" style="justify-content:center; gap:12px; margin-top:12px;"><button id="addPointsBtn" style="background:#fbbf24;">➕ 家长加积分</button><button id="deductPointsBtn" style="background:#f97316;">➖ 扣除积分</button></div></div>
+            <div class="card"><div class="card-header"><span>🎁 积分奖励项目</span><button id="showAddRewardBtn" class="small secondary">➕ 添加奖励项目</button></div><div id="rewardItemsList"></div></div>
+            <div class="card"><div class="card-header"><span>🏅 勋章墙 <span id="badgeCountDisplay"></span></span><button id="showAddBadgeBtn" class="small secondary">✨ 添加勋章</button></div><div id="badgesContainer" class="badges-wall"></div></div>
+        </div>
+    </div>
+
+    <div id="addRewardModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:4000; align-items:center; justify-content:center;"><div style="background:white; border-radius:28px; padding:24px; width:90%; max-width:320px;"><h3>添加积分奖励项目</h3><input type="text" id="rewardNameInput" placeholder="项目名称" style="width:100%; margin:12px 0;"><input type="number" id="rewardPointsInput" placeholder="积分值" style="width:100%; margin:12px 0;"><div class="flex-between"><button id="cancelRewardBtn" class="secondary">取消</button><button id="confirmRewardBtn">确认添加</button></div></div></div>
+    <div id="addBadgeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:4000; align-items:center; justify-content:center;"><div style="background:white; border-radius:28px; padding:24px; width:90%; max-width:400px;"><h3>添加勋章</h3><input type="text" id="badgeNameInput" placeholder="勋章名称" style="width:100%; margin:12px 0;"><div>选择图标:</div><div class="icon-picker" id="iconPicker"><span class="icon-option">🏅</span><span class="icon-option">🏆</span><span class="icon-option">⭐</span><span class="icon-option">🌟</span><span class="icon-option">🎖️</span><span class="icon-option">📚</span><span class="icon-option">✏️</span><span class="icon-option">🎨</span><span class="icon-option">🎵</span><span class="icon-option">⚽</span><span class="icon-option">🧮</span><span class="icon-option">📖</span><span class="icon-option">🔤</span><span class="icon-option">💪</span><span class="icon-option">🎯</span></div><div>选择颜色:</div><div class="color-picker" id="colorPicker"><div class="color-option" style="background:#f59e0b;"></div><div class="color-option" style="background:#3b82f6;"></div><div class="color-option" style="background:#22c55e;"></div><div class="color-option" style="background:#ef4444;"></div><div class="color-option" style="background:#a855f7;"></div><div class="color-option" style="background:#ec489a;"></div></div><div>达成条件:</div><select id="badgeConditionType" style="width:100%; margin-bottom:8px;"><option value="totalTasks">累计完成任务数</option><option value="totalPoints">累计获得积分</option><option value="dailyPerfect">单日完成所有任务次数</option><option value="subjectProgress">单科进度达标</option></select><input type="number" id="badgeConditionValue" placeholder="目标值" style="width:100%;"><select id="badgeConditionSubject" style="width:100%; margin-top:8px; display:none;"><option value="">选择科目</option></select><div class="flex-between"><button id="cancelBadgeBtn" class="secondary">取消</button><button id="confirmBadgeBtn">确认添加</button></div></div></div>
+
+    <script>
+        // 数据
+        let subjects = [];
+        let weekTasks = [];
+        let taskRecords = [];
+        let todayTaskOrder = [];
+        let scores = [];
+        let rewardItems = [];
+        let totalPoints = 0;
+        let badges = [];
+        let dailyCompletionBonusGiven = {};
+        
+        let activeTimer = null;
+        let activeRestTimer = null;
+        let isResting = false;
+        let currentScoreCategory = 'math';
+        let charts = {};
+        
+        function getTodayStr() {
+            let d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+        
+        function getTodayWeekday() { return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date().getDay()]; }
+        
+        function showToast(msg) {
+            let toast = document.createElement('div');
+            toast.className = 'reminder-toast';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+            if(Notification.permission === "granted") new Notification("学习管理工具", {body: msg});
+        }
+        
+        function saveToLocal() {
+            const data = {
+                subjects, weekTasks, taskRecords, todayTaskOrder, scores, rewardItems, totalPoints, badges, dailyCompletionBonusGiven
+            };
+            localStorage.setItem('study_data', JSON.stringify(data));
+        }
+        
+        function loadFromLocal() {
+            let saved = localStorage.getItem('study_data');
+            if (saved) {
+                let d = JSON.parse(saved);
+                subjects = d.subjects || [];
+                weekTasks = d.weekTasks || [];
+                taskRecords = d.taskRecords || [];
+                todayTaskOrder = d.todayTaskOrder || [];
+                scores = d.scores || [];
+                rewardItems = d.rewardItems || [];
+                totalPoints = d.totalPoints || 0;
+                badges = d.badges || [];
+                dailyCompletionBonusGiven = d.dailyCompletionBonusGiven || {};
+            }
+            if(subjects.length === 0) {
+                subjects = [
+                    { id: "math_calc", name: "数学计算", category: "math", unit: "题", target: 100, completed: 0, totalTime: 0 },
+                    { id: "math_app", name: "数学应用", category: "math", unit: "题", target: 50, completed: 0, totalTime: 0 },
+                    { id: "chinese_read", name: "语文阅读", category: "chinese", unit: "篇", target: 30, completed: 0, totalTime: 0 },
+                    { id: "chinese_spec", name: "语文专项", category: "chinese", unit: "篇", target: 40, completed: 0, totalTime: 0 },
+                    { id: "english_read", name: "英语阅读", category: "english", unit: "篇", target: 40, completed: 0, totalTime: 0 },
+                    { id: "english_listen", name: "英语听力", category: "english", unit: "篇", target: 30, completed: 0, totalTime: 0 }
+                ];
+                weekTasks = [
+                    { day: 1, subjectId: "math_calc", desc: "计算练习", timeMinutes: 20, hasCount: false, countAmount: 0 },
+                    { day: 2, subjectId: "chinese_read", desc: "阅读训练", timeMinutes: 20, hasCount: true, countAmount: 1 },
+                    { day: 3, subjectId: "math_app", desc: "应用题", timeMinutes: 25, hasCount: false, countAmount: 0 },
+                    { day: 4, subjectId: "chinese_spec", desc: "专项练习", timeMinutes: 20, hasCount: true, countAmount: 1 },
+                    { day: 5, subjectId: "english_read", desc: "英语阅读", timeMinutes: 20, hasCount: true, countAmount: 1 },
+                    { day: 6, subjectId: "english_listen", desc: "听力训练", timeMinutes: 15, hasCount: false, countAmount: 0 }
+                ];
+                rewardItems = [
+                    { id: "r1", name: "主动做家务", points: 5 },
+                    { id: "r2", name: "额外阅读", points: 3 }
+                ];
+                badges = [
+                    { id: "b1", name: "学习小新秀", icon: "🌟", color: "#22c55e", conditionType: "totalTasks", conditionValue: 10, conditionSubject: null, earned: false, progress: 0 },
+                    { id: "b2", name: "学习达人", icon: "🏅", color: "#f59e0b", conditionType: "totalTasks", conditionValue: 50, conditionSubject: null, earned: false, progress: 0 },
+                    { id: "b3", name: "学霸之星", icon: "🏆", color: "#ef4444", conditionType: "totalPoints", conditionValue: 500, conditionSubject: null, earned: false, progress: 0 }
+                ];
+                saveToLocal();
+            }
+        }
+        
+        function exportData() {
+            const data = {
+                subjects, weekTasks, taskRecords, todayTaskOrder, scores, rewardItems, totalPoints, badges, dailyCompletionBonusGiven,
+                exportTime: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `学习工具数据_${getTodayStr()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("数据已导出");
+        }
+        
+        function importData(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    subjects = data.subjects || [];
+                    weekTasks = data.weekTasks || [];
+                    taskRecords = data.taskRecords || [];
+                    todayTaskOrder = data.todayTaskOrder || [];
+                    scores = data.scores || [];
+                    rewardItems = data.rewardItems || [];
+                    totalPoints = data.totalPoints || 0;
+                    badges = data.badges || [];
+                    dailyCompletionBonusGiven = data.dailyCompletionBonusGiven || {};
+                    saveToLocal();
+                    refreshUI();
+                    checkAllBadgesProgress();
+                    showToast("数据导入成功");
+                } catch(err) {
+                    showToast("导入失败：文件格式错误");
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function onDataChange() {
+            saveToLocal();
+            refreshUI();
+        }
+        
+        function refreshUI() {
+            renderSubjects();
+            updateSubjectSelect();
+            updateSubjectMultiSelect();
+            renderTimetable();
+            renderTodayTasks();
+            updatePointsDisplay();
+            renderRewardItems();
+            renderBadges();
+            updateCharts();
+        }
+        
+        function getCategoryName(cat) {
+            if (cat === 'math') return '数学类';
+            if (cat === 'chinese') return '语文类';
+            return '英语类';
+        }
+        
+        function renderSubjects() {
+            let container = document.getElementById('subjectsList');
+            if (!container) return;
+            if (subjects.length === 0) { container.innerHTML = '<div class="empty-state">暂无科目</div>'; return; }
+            container.innerHTML = subjects.map(s => {
+                let percent = s.target > 0 ? (s.completed / s.target * 100) : 0;
+                let catClass = s.category === 'math' ? 'category-math' : (s.category === 'chinese' ? 'category-chinese' : 'category-english');
+                return `<div class="subject-item"><div><b>${s.name}</b><span class="category-badge ${catClass}">${getCategoryName(s.category)}</span><div class="badge">目标: ${s.target}${s.unit}</div></div><div style="flex:1;"><div class="flex-between"><span>已完成: ${s.completed}/${s.target}${s.unit}</span><span>${Math.round(percent)}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div></div><div><button class="small secondary add-progress" data-id="${s.id}">+进度</button><button class="small danger delete-subject" data-id="${s.id}" style="background:#ef4444;">删除</button></div></div>`;
+            }).join('');
+            document.querySelectorAll('.add-progress').forEach(btn => btn.onclick = () => { let id = btn.dataset.id, sub = subjects.find(s=>s.id===id); if(sub){let add=prompt(`增加${sub.name}进度 (单位:${sub.unit})`,1); if(add){sub.completed=Math.min(sub.target,sub.completed+parseFloat(add)); onDataChange();}}});
+            document.querySelectorAll('.delete-subject').forEach(btn => btn.onclick = () => { if(confirm("删除科目？")){let id=btn.dataset.id; subjects=subjects.filter(s=>s.id!==id); weekTasks=weekTasks.filter(t=>t.subjectId!==id); onDataChange();}});
+        }
+        
+        function updateSubjectSelect() { 
+            let sel = document.getElementById('taskSubject'); 
+            if(sel) sel.innerHTML = subjects.map(s => `<option value="${s.id}">${s.name} (${getCategoryName(s.category)})</option>`).join(''); 
+        }
+        
+        function updateSubjectMultiSelect() {
+            let container = document.getElementById('subjectOptions');
+            if (!container) return;
+            container.innerHTML = subjects.map(s => `
+                <label class="multi-select-option">
+                    <input type="checkbox" value="${s.id}"> 
+                    <span>${s.name} (${getCategoryName(s.category)})</span>
+                </label>
+            `).join('');
+        }
+        
+        function getSelectedDays() {
+            let checkboxes = document.querySelectorAll('#dayOptions input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => parseInt(cb.value));
+        }
+        
+        function getSelectedSubjects() {
+            let checkboxes = document.querySelectorAll('#subjectOptions input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+        
+        function updatePreview() {
+            let selectedDays = getSelectedDays();
+            let selectedSubjects = getSelectedSubjects();
+            let desc = document.getElementById('taskDesc').value.trim();
+            let time = document.getElementById('taskTime').value;
+            let hasCount = document.getElementById('taskHasCount').checked;
+            let countAmount = hasCount ? document.getElementById('taskCountAmount').value : 0;
+            
+            let previewDiv = document.getElementById('batchPreview');
+            if (selectedDays.length === 0 || selectedSubjects.length === 0 || !desc) {
+                previewDiv.style.display = 'none';
+                return;
+            }
+            
+            let daysNames = selectedDays.map(d => {
+                const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                return days[d];
+            }).join('、');
+            
+            let subjectsNames = selectedSubjects.map(sid => {
+                let sub = subjects.find(s => s.id === sid);
+                return sub ? sub.name : sid;
+            }).join('、');
+            
+            let totalTasks = selectedDays.length * selectedSubjects.length;
+            let countInfo = hasCount ? `，每次完成+${countAmount}数量进度` : '';
+            
+            previewDiv.style.display = 'block';
+            previewDiv.innerHTML = `📋 将添加 <strong>${totalTasks}</strong> 条任务：<br>
+            📅 日期：${daysNames}<br>
+            📚 科目：${subjectsNames}<br>
+            📝 任务：${desc}<br>
+            ⏱️ 时间：${time}分钟${countInfo}`;
+        }
+        
+        function addWeekTask() {
+            let selectedDays = getSelectedDays();
+            let selectedSubjects = getSelectedSubjects();
+            let desc = document.getElementById('taskDesc').value.trim();
+            let timeMinutes = parseInt(document.getElementById('taskTime').value);
+            let hasCount = document.getElementById('taskHasCount').checked;
+            let countAmount = hasCount ? parseFloat(document.getElementById('taskCountAmount').value) : 0;
+            
+            if(selectedDays.length === 0) { alert("请至少选择一个日期"); return; }
+            if(selectedSubjects.length === 0) { alert("请至少选择一个科目"); return; }
+            if(!desc) { alert("请填写任务描述"); return; }
+            if(hasCount && (!countAmount || countAmount <= 0)) { alert("请填写有效的完成数量"); return; }
+            
+            let addedCount = 0;
+            for (let day of selectedDays) {
+                for (let subjectId of selectedSubjects) {
+                    weekTasks.push({ day, subjectId, desc, timeMinutes, hasCount, countAmount });
+                    addedCount++;
+                }
+            }
+            
+            onDataChange();
+            document.getElementById('taskDesc').value = '';
+            document.getElementById('taskHasCount').checked = false;
+            document.getElementById('countAmountGroup').style.display = 'none';
+            document.getElementById('taskCountAmount').value = '1';
+            document.getElementById('batchPreview').style.display = 'none';
+            
+            showToast(`成功添加 ${addedCount} 条任务`);
+        }
+        
+        document.getElementById('selectAllDays')?.addEventListener('click', function() {
+            let checkboxes = document.querySelectorAll('#dayOptions input[type="checkbox"]');
+            let allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            updatePreview();
+        });
+        
+        document.getElementById('selectAllSubjects')?.addEventListener('click', function() {
+            let checkboxes = document.querySelectorAll('#subjectOptions input[type="checkbox"]');
+            let allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            updatePreview();
+        });
+        
+        document.getElementById('taskDesc')?.addEventListener('input', updatePreview);
+        document.getElementById('taskTime')?.addEventListener('change', updatePreview);
+        document.getElementById('taskHasCount')?.addEventListener('change', function() {
+            document.getElementById('countAmountGroup').style.display = this.checked ? 'block' : 'none';
+            updatePreview();
+        });
+        document.getElementById('taskCountAmount')?.addEventListener('input', updatePreview);
+        
+        function clearAllTasks() {
+            if(confirm("清空所有任务？")) {
+                weekTasks = [];
+                onDataChange();
+                showToast("已清空");
+            }
+        }
+        
+        function renderTimetable() {
+            let container = document.getElementById('timetableContainer');
+            if(!container) return;
+            let days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            let tasksByDay = {};
+            weekTasks.forEach(t => { if(!tasksByDay[t.day]) tasksByDay[t.day] = []; tasksByDay[t.day].push(t); });
+            
+            let html = '<table><thead> 用来';
+            for(let i = 0; i <= 6; i++) {
+                html += `<th>${days[i]}</th>`;
+            }
+            html += '</thead><tbody>';
+            
+            for(let i = 0; i <= 6; i++) {
+                html += '<td style="vertical-align:top;">';
+                let tasks = tasksByDay[i] || [];
+                if(tasks.length === 0) {
+                    html += '<div style="color:#cbd5e1; text-align:center; padding:16px;">—</div>';
+                } else {
+                    tasks.forEach((task, idx) => {
+                        let subject = subjects.find(s => s.id === task.subjectId);
+                        let countHtml = '';
+                        if (task.hasCount && task.countAmount > 0) {
+                            countHtml = `<span class="task-count">📊 +${task.countAmount}${subject?.unit || ''}</span>`;
+                        }
+                        html += `<div class="task-cell">
+                            <div class="task-subject">${subject?.name || task.subjectId}</div>
+                            <div class="task-desc">${task.desc}</div>
+                            <div><span class="task-time">⏱️ ${task.timeMinutes}分钟</span>${countHtml}</div>
+                            <button class="delete-task-icon" data-day="${task.day}" data-idx="${idx}">✕</button>
+                        </div>`;
+                    });
+                }
+                html += ' ';
+            }
+            html += '</tbody> </div>';
+            container.innerHTML = html;
+            
+            document.querySelectorAll('.delete-task-icon').forEach(btn => {
+                btn.onclick = () => {
+                    let day = parseInt(btn.dataset.day), idx = parseInt(btn.dataset.idx);
+                    let tasksOnDay = weekTasks.filter(t => t.day === day);
+                    if(tasksOnDay[idx]) {
+                        weekTasks = weekTasks.filter(t => !(t.day === day && t.desc === tasksOnDay[idx].desc && t.subjectId === tasksOnDay[idx].subjectId));
+                        onDataChange();
+                    }
+                };
+            });
+        }
+        
+        // 今日任务相关函数
+        function getTodayDefaultTasks() {
+            let today = new Date().getDay();
+            return weekTasks.filter(t => t.day === today).map((t, idx) => ({ id: `task_${t.day}_${idx}_${t.desc}`, type: 'study', data: t }));
+        }
+        
+        function getTodayTaskOrder() {
+            let saved = todayTaskOrder.find(o => o.date === getTodayStr());
+            return saved?.order || getTodayDefaultTasks();
+        }
+        
+        function saveTodayTaskOrder(order) {
+            let today = getTodayStr();
+            let idx = todayTaskOrder.findIndex(o => o.date === today);
+            if(idx >= 0) todayTaskOrder[idx].order = order;
+            else todayTaskOrder.push({ date: today, order: order });
+            onDataChange();
+        }
+        
+        function getTaskRecords() {
+            let rec = {};
+            taskRecords.filter(r => r.dateStr === getTodayStr()).forEach(r => { rec[r.taskId] = r; });
+            return rec;
+        }
+        
+        function updateSubjectProgress(subjectId, addAmount) {
+            let sub = subjects.find(s => s.id === subjectId);
+            if(sub) { 
+                sub.completed = Math.min(sub.target, sub.completed + addAmount); 
+                onDataChange(); 
+            }
+        }
+        
+        function updateSubjectTime(subjectId, minutes) {
+            let sub = subjects.find(s => s.id === subjectId);
+            if(sub) { sub.totalTime = (sub.totalTime || 0) + minutes; onDataChange(); }
+        }
+        
+        function addPoints(amount, reason) {
+            totalPoints += amount;
+            onDataChange();
+            showToast(`${reason} +${amount}积分`);
+        }
+        
+        function checkDailyCompletionBonus() {
+            let today = getTodayStr();
+            let order = getTodayTaskOrder();
+            let records = getTaskRecords();
+            let totalTasks = order.filter(i => i.type === 'study').length;
+            let completedTasks = order.filter(i => i.type === 'study' && records[i.id]?.completed).length;
+            if(totalTasks > 0 && completedTasks === totalTasks && !dailyCompletionBonusGiven[today]) {
+                dailyCompletionBonusGiven[today] = true;
+                addPoints(5, "完成今日所有任务");
+            }
+        }
+        
+        function completeTask(task, taskId) {
+            if(isResting) { showToast("休息中"); return; }
+            if(getTaskRecords()[taskId]?.completed) { showToast("已完成"); return; }
+            
+            let subject = subjects.find(s => s.id === task.subjectId);
+            let countInfo = '';
+            if (task.hasCount && task.countAmount > 0) {
+                countInfo = `，${subject?.name || '科目'}进度 +${task.countAmount}${subject?.unit || ''}`;
+            }
+            
+            if(confirm(`完成「${task.desc}」？\n⏱️ 记录 ${task.timeMinutes}分钟学习时间${countInfo}\n🏆 获得2积分`)) {
+                taskRecords.push({ 
+                    dateStr: getTodayStr(), 
+                    taskId, 
+                    task, 
+                    completed: true, 
+                    minutes: task.timeMinutes 
+                });
+                
+                updateSubjectTime(task.subjectId, task.timeMinutes);
+                
+                if (task.hasCount && task.countAmount > 0) {
+                    updateSubjectProgress(task.subjectId, task.countAmount);
+                }
+                
+                addPoints(2, `完成任务: ${task.desc}`);
+                checkDailyCompletionBonus();
+                renderTodayTasks();
+                checkAllBadgesProgress();
+            }
+        }
+        
+        function startTimerTask(task, taskId) {
+            if(isResting) { showToast("休息中"); return; }
+            if(activeTimer) { alert("请先结束当前任务"); return; }
+            activeTimer = { task, taskId, startTime: Date.now() };
+            showToast(`开始计时：${task.desc}`);
+            renderTodayTasks();
+        }
+        
+        function stopTimerTask() {
+            if(!activeTimer) return;
+            let minutes = (Date.now() - activeTimer.startTime) / 1000 / 60;
+            let task = activeTimer.task, taskId = activeTimer.taskId, today = getTodayStr(), records = getTaskRecords(), existing = records[taskId];
+            if(minutes < 0.5) { showToast("时间太短"); activeTimer = null; renderTodayTasks(); return; }
+            let recordedMinutes = (existing?.minutes || 0) + minutes;
+            let isCompleted = recordedMinutes >= (task.timeMinutes || 30);
+            
+            if(existing) { 
+                existing.minutes = recordedMinutes; 
+                if(isCompleted) existing.completed = true; 
+            } else { 
+                taskRecords.push({ dateStr: today, taskId, task, completed: isCompleted, minutes: recordedMinutes }); 
+            }
+            
+            updateSubjectTime(task.subjectId, minutes);
+            
+            if(isCompleted) {
+                if (task.hasCount && task.countAmount > 0) {
+                    updateSubjectProgress(task.subjectId, task.countAmount);
+                }
+                addPoints(2, `完成任务: ${task.desc}`);
+                checkDailyCompletionBonus();
+            } else {
+                addPoints(Math.floor(minutes * 0.5), `学习${Math.round(minutes)}分钟`);
+            }
+            
+            activeTimer = null;
+            renderTodayTasks();
+            checkAllBadgesProgress();
+        }
+        
+        function addRestTask() {
+            let order = getTodayTaskOrder();
+            let minutes = parseInt(prompt("休息分钟数:", 5) || 5);
+            order.push({ id: `rest_${Date.now()}`, type: 'rest', data: { duration: minutes, remaining: minutes } });
+            saveTodayTaskOrder(order);
+            renderTodayTasks();
+            showToast(`添加${minutes}分钟休息`);
+        }
+        
+        function resetOrder() {
+            saveTodayTaskOrder(getTodayDefaultTasks());
+            renderTodayTasks();
+            showToast("已重置顺序");
+        }
+        
+        function startRest(id, duration) {
+            if(activeTimer) { alert("请先结束学习"); return; }
+            if(isResting) return;
+            isResting = true;
+            let remaining = duration;
+            showToast(`休息开始，${remaining}分钟后继续`);
+            activeRestTimer = setInterval(() => {
+                remaining--;
+                if(remaining <= 0) {
+                    clearInterval(activeRestTimer);
+                    activeRestTimer = null;
+                    isResting = false;
+                    showToast("休息结束！");
+                    renderTodayTasks();
+                } else {
+                    let el = document.querySelector(`[data-rest-id="${id}"]`);
+                    if(el) el.innerText = `⏰ ${remaining}分钟`;
+                }
+            }, 60000);
+            renderTodayTasks();
+        }
+        
+        function forceEndRest() {
+            if(activeRestTimer) { clearInterval(activeRestTimer); activeRestTimer = null; }
+            isResting = false;
+            showToast("休息已结束");
+            renderTodayTasks();
+        }
+        
+        let dragSource = null;
+        function renderTodayTasks() {
+            let container = document.getElementById('todayTasksContainer');
+            if(!container) return;
+            let order = getTodayTaskOrder();
+            let records = getTaskRecords();
+            let completedCount = 0;
+            if(order.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 今日无任务，可点击"添加休息"</div>';
+                document.getElementById('completionRateText').innerText = '0%';
+                document.getElementById('completionFill').style.width = '0%';
+                document.getElementById('completionDetail').innerText = '(0/0)';
+                return;
+            }
+            container.innerHTML = '';
+            order.forEach((item, idx) => {
+                let isCompleted = false, isLocked = isResting && !activeTimer, content = '';
+                if(item.type === 'study') {
+                    let task = item.data, subject = subjects.find(s => s.id === task.subjectId), taskId = item.id, record = records[taskId];
+                    isCompleted = record?.completed || false;
+                    if(isCompleted) completedCount++;
+                    let catClass = subject?.category === 'math' ? 'category-math' : (subject?.category === 'chinese' ? 'category-chinese' : 'category-english');
+                    let recordedMin = record?.minutes || 0;
+                    let percent = Math.min(100, (recordedMin / (task.timeMinutes || 30)) * 100);
+                    let isTimerActive = activeTimer && activeTimer.taskId === taskId;
+                    
+                    let countHtml = '';
+                    if (task.hasCount && task.countAmount > 0) {
+                        countHtml = `<span class="badge" style="background:#22c55e; color:white; margin-left:6px;">📊 +${task.countAmount}${subject?.unit || ''}</span>`;
+                    }
+                    
+                    content = `<span class="drag-handle">⋮⋮</span><div><strong>${subject?.name || task.subjectId}</strong><span class="category-badge ${catClass}">${getCategoryName(subject?.category)}</span>${countHtml}<div style="font-size:10px;">${task.desc}</div></div><div style="flex:1;"><div class="progress-bar"><div class="progress-fill" style="width:${percent}%; background:#22c55e;"></div></div><div>${Math.round(recordedMin)}/${task.timeMinutes}分钟</div></div><div>${!isCompleted ? (isLocked ? '<span class="badge" style="background:#f97316;">⏰ 休息中</span>' : (!isTimerActive ? `<button class="small start-timer" data-idx="${idx}">▶ 开始</button>` : `<button class="small warning stop-timer">⏹️ 结束</button>`)) : '<span class="badge" style="background:#22c55e;">已完成 ✓</span>'}</div>`;
+                } else {
+                    let rest = item.data, isRestActive = isResting && activeRestTimer;
+                    content = `<span class="drag-handle">⋮⋮</span><div><strong>☕ 休息</strong><div>${rest.duration}分钟</div></div><div class="rest-timer" data-rest-id="${item.id}">${isRestActive ? `⏰ 剩余${rest.remaining}分钟` : `休息 ${rest.duration}分钟`}</div><div>${!isRestActive ? `<button class="small start-rest" data-id="${item.id}" data-duration="${rest.duration}">开始休息</button>` : `<button class="small warning end-rest">结束休息</button>`}</div>`;
+                }
+                let div = document.createElement('div');
+                div.className = `task-item ${isCompleted ? 'completed' : ''} ${item.type === 'rest' ? 'rest-task' : ''} ${isLocked ? 'locked' : ''}`;
+                div.setAttribute('draggable', 'true');
+                div.setAttribute('data-index', idx);
+                div.innerHTML = content;
+                div.addEventListener('dragstart', (e) => { dragSource = idx; e.target.closest('.task-item')?.classList.add('dragging'); });
+                div.addEventListener('dragover', (e) => { e.preventDefault(); });
+                div.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if(dragSource !== null && dragSource !== idx) {
+                        let newOrder = [...order];
+                        let dragged = newOrder[dragSource];
+                        newOrder.splice(dragSource, 1);
+                        newOrder.splice(idx, 0, dragged);
+                        saveTodayTaskOrder(newOrder);
+                        renderTodayTasks();
+                    }
+                    dragSource = null;
+                    document.querySelectorAll('.task-item').forEach(i => i.classList.remove('dragging'));
+                });
+                container.appendChild(div);
+            });
+            let total = order.filter(i => i.type === 'study').length;
+            let rate = total === 0 ? 0 : (completedCount / total) * 100;
+            document.getElementById('completionRateText').innerText = Math.round(rate) + '%';
+            document.getElementById('completionFill').style.width = rate + '%';
+            document.getElementById('completionDetail').innerText = `(${completedCount}/${total})`;
+            document.querySelectorAll('.start-timer').forEach(btn => { btn.onclick = () => { let idx = parseInt(btn.dataset.idx), order = getTodayTaskOrder(), item = order[idx]; if(item && item.type === 'study') startTimerTask(item.data, item.id); }; });
+            document.querySelectorAll('.stop-timer').forEach(btn => { btn.onclick = () => stopTimerTask(); });
+            document.querySelectorAll('.start-rest').forEach(btn => { btn.onclick = () => { let id = btn.dataset.id, dur = parseInt(btn.dataset.duration); startRest(id, dur); }; });
+            document.querySelectorAll('.end-rest').forEach(btn => { btn.onclick = () => forceEndRest(); });
+        }
+        
+        function getLast7Days() {
+            let days = [], d = new Date();
+            for(let i = 6; i >= 0; i--) { let day = new Date(d); day.setDate(d.getDate() - i); days.push(day.toISOString().slice(0, 10)); }
+            return days;
+        }
+        
+        function updateCharts() {
+            let days = getLast7Days();
+            let dailyTime = days.map(day => taskRecords.filter(r => r.dateStr === day).reduce((s, r) => s + (r.minutes || 0), 0));
+            if(charts.dailyStudy) charts.dailyStudy.destroy();
+            charts.dailyStudy = new Chart(document.getElementById('dailyStudyChart'), { type: 'bar', data: { labels: days.map(d => d.slice(5)), datasets: [{ label: '学习时间(分钟)', data: dailyTime, backgroundColor: '#3b82f6' }] } });
+            
+            let completionRates = [], completedCounts = [];
+            days.forEach(day => {
+                let dayTasks = getTodayDefaultTasks();
+                let records = taskRecords.filter(r => r.dateStr === day);
+                let total = dayTasks.length, completed = dayTasks.filter(t => records.find(r => r.taskId === t.id && r.completed)).length;
+                completionRates.push(total === 0 ? 0 : (completed / total) * 100);
+                completedCounts.push(completed);
+            });
+            if(charts.completionRate) charts.completionRate.destroy();
+            charts.completionRate = new Chart(document.getElementById('completionRateChart'), { type: 'line', data: { labels: days.map(d => d.slice(5)), datasets: [{ label: '完成率(%)', data: completionRates, borderColor: '#22c55e', fill: false, tension: 0.3 }] } });
+            if(charts.completedTasks) charts.completedTasks.destroy();
+            charts.completedTasks = new Chart(document.getElementById('completedTasksChart'), { type: 'line', data: { labels: days.map(d => d.slice(5)), datasets: [{ label: '完成任务数', data: completedCounts, borderColor: '#f97316', fill: false, tension: 0.3 }] } });
+            
+            let categories = ['math', 'chinese', 'english'], categoryNames = ['数学类', '语文类', '英语类'], categoryColors = ['#3b82f6', '#22c55e', '#f97316'];
+            let categoryProgress = categories.map(cat => { let catSubjects = subjects.filter(s => s.category === cat); let totalTarget = catSubjects.reduce((sum, s) => sum + s.target, 0); let totalCompleted = catSubjects.reduce((sum, s) => sum + s.completed, 0); return totalTarget > 0 ? (totalCompleted / totalTarget * 100) : 0; });
+            let categoryTime = categories.map(cat => subjects.filter(s => s.category === cat).reduce((sum, s) => sum + (s.totalTime || 0), 0));
+            let totalTimeAll = categoryTime.reduce((a,b) => a+b, 0);
+            let categoryTimePercent = categoryTime.map(t => totalTimeAll > 0 ? (t/totalTimeAll*100) : 0);
+            if(charts.categoryProgress) charts.categoryProgress.destroy();
+            charts.categoryProgress = new Chart(document.getElementById('categoryProgressChart'), { type: 'bar', data: { labels: categoryNames, datasets: [{ label: '完成进度(%)', data: categoryProgress, backgroundColor: categoryColors }] } });
+            if(charts.categoryTime) charts.categoryTime.destroy();
+            charts.categoryTime = new Chart(document.getElementById('categoryTimeChart'), { type: 'pie', data: { labels: categoryNames, datasets: [{ label: '时间占比(%)', data: categoryTimePercent, backgroundColor: categoryColors }] } });
+            
+            let subjectNames = subjects.map(s => s.name);
+            let subjectProgress = subjects.map(s => s.target > 0 ? (s.completed / s.target * 100) : 0);
+            let subjectTimes = subjects.map(s => s.totalTime || 0);
+            if(charts.subjectProgress) charts.subjectProgress.destroy();
+            charts.subjectProgress = new Chart(document.getElementById('subjectProgressDetailChart'), { type: 'bar', data: { labels: subjectNames, datasets: [{ label: '完成进度(%)', data: subjectProgress, backgroundColor: '#3b82f6' }] } });
+            if(charts.subjectTime) charts.subjectTime.destroy();
+            charts.subjectTime = new Chart(document.getElementById('subjectTimeDetailChart'), { type: 'bar', data: { labels: subjectNames, datasets: [{ label: '学习时间(分钟)', data: subjectTimes, backgroundColor: '#f97316' }] } });
+            
+            updateScoreChart();
+        }
+        
+        function updateScoreChart() {
+            let subjectScores = scores.filter(s => s.subjectId === currentScoreCategory).sort((a,b) => a.dateStr.localeCompare(b.dateStr));
+            let labels = subjectScores.map(s => s.dateStr.slice(5)), data = subjectScores.map(s => s.score);
+            if(charts.scoreTrend) charts.scoreTrend.destroy();
+            charts.scoreTrend = new Chart(document.getElementById('scoreTrendChart'), { type: 'line', data: { labels, datasets: [{ label: `${currentScoreCategory === 'math' ? '数学类' : currentScoreCategory === 'chinese' ? '语文类' : '英语类'}成绩趋势`, data, borderColor: '#3b82f6', fill: false, tension: 0.3 }] } });
+            let container = document.getElementById('scoresList');
+            if(container) container.innerHTML = subjectScores.slice().reverse().slice(0,8).map(s => `<div class="flex-between"><span>${s.dateStr}</span><span style="font-weight:600;">${s.score}分</span></div>`).join('') || '<div class="empty-state">暂无成绩</div>';
+        }
+        
+        function renderRewardItems() {
+            let container = document.getElementById('rewardItemsList');
+            if(!container) return;
+            if(rewardItems.length === 0) { container.innerHTML = '<div class="empty-state">暂无奖励项目</div>'; return; }
+            container.innerHTML = rewardItems.map(item => `<div class="reward-item"><span>🎁 ${item.name} <span style="color:#f97316;">+${item.points}分</span></span><div><button class="small get-reward" data-points="${item.points}" data-name="${item.name}">获得积分</button><button class="small danger delete-reward" data-id="${item.id}" style="background:#ef4444;">删除</button></div></div>`).join('');
+            document.querySelectorAll('.get-reward').forEach(btn => { btn.onclick = () => { let points = parseInt(btn.dataset.points), name = btn.dataset.name; if(confirm(`获得「${name}」奖励 +${points}积分？`)) { totalPoints += points; onDataChange(); showToast(`🎉 +${points}积分！`); } }; });
+            document.querySelectorAll('.delete-reward').forEach(btn => { btn.onclick = () => { let id = btn.dataset.id; if(confirm("删除这个奖励项目？")) { rewardItems = rewardItems.filter(i => i.id !== id); onDataChange(); } }; });
+        }
+        
+        function calculateBadgeProgress(badge) {
+            if(badge.earned) return 100;
+            let current = 0;
+            switch(badge.conditionType) {
+                case 'totalTasks': current = taskRecords.filter(r => r.completed).length; break;
+                case 'totalPoints': current = totalPoints; break;
+                case 'dailyPerfect': current = Object.keys(dailyCompletionBonusGiven).length; break;
+                case 'subjectProgress': let subject = subjects.find(s => s.id === badge.conditionSubject); if(subject) current = subject.target > 0 ? (subject.completed / subject.target * 100) : 0; break;
+            }
+            return Math.min(100, Math.floor((current / badge.conditionValue) * 100));
+        }
+        
+        function checkBadgeEarned(badge) {
+            if(badge.earned) return true;
+            let current = 0;
+            switch(badge.conditionType) {
+                case 'totalTasks': current = taskRecords.filter(r => r.completed).length; break;
+                case 'totalPoints': current = totalPoints; break;
+                case 'dailyPerfect': current = Object.keys(dailyCompletionBonusGiven).length; break;
+                case 'subjectProgress': let subject = subjects.find(s => s.id === badge.conditionSubject); if(subject) current = subject.target > 0 ? (subject.completed / subject.target * 100) : 0; break;
+            }
+            return current >= badge.conditionValue;
+        }
+        
+        function checkAllBadgesProgress() {
+            let earnedCount = 0;
+            badges.forEach(badge => {
+                let wasEarned = badge.earned;
+                badge.earned = checkBadgeEarned(badge);
+                badge.progress = calculateBadgeProgress(badge);
+                if(wasEarned !== badge.earned && badge.earned) showToast(`🎖️ 恭喜获得新勋章：${badge.name}！`);
+                if(badge.earned) earnedCount++;
+            });
+            onDataChange();
+            renderBadges();
+            return earnedCount;
+        }
+        
+        function renderBadges() {
+            let container = document.getElementById('badgesContainer');
+            if(!container) return;
+            let earnedCount = badges.filter(b => b.earned).length;
+            document.getElementById('badgeCountDisplay').innerText = `(${earnedCount}/${badges.length})`;
+            if(badges.length === 0) { container.innerHTML = '<div class="empty-state">✨ 暂无勋章</div>'; return; }
+            container.innerHTML = badges.map(badge => `<div class="badge-card ${badge.earned ? '' : 'locked'}" style="background: ${badge.earned ? `linear-gradient(135deg, ${badge.color}20, ${badge.color}40)` : '#e2e8f0'}; border-left: 4px solid ${badge.color};"><div class="badge-icon">${badge.icon}</div><div class="badge-name" style="color: ${badge.color};">${badge.name}</div><div class="badge-progress"><div class="badge-progress-bar"><div class="badge-progress-fill" style="width: ${badge.progress}%; background: ${badge.color};"></div></div><div class="badge-progress-text">${badge.progress}%</div></div><div class="badge-count">${badge.earned ? '✓ 已获得' : `达成条件: ${badge.conditionValue}`}</div><button class="small danger delete-badge" data-id="${badge.id}" style="background:#ef4444; margin-top:8px;">删除</button></div>`).join('');
+            document.querySelectorAll('.delete-badge').forEach(btn => { btn.onclick = (e) => { e.stopPropagation(); let id = btn.dataset.id; if(confirm("删除这个勋章？")) { badges = badges.filter(b => b.id !== id); onDataChange(); } }; });
+        }
+        
+        function updatePointsDisplay() { let el = document.getElementById('totalPointsDisplay'); if(el) el.innerText = totalPoints; }
+        
+        // 事件绑定
+        document.getElementById('addSubjectBtn').onclick = () => {
+            let name = document.getElementById('newSubjectName').value.trim();
+            let category = document.getElementById('newSubjectCategory').value;
+            let unit = document.getElementById('newSubjectUnit').value.trim();
+            let target = parseFloat(document.getElementById('newSubjectTarget').value);
+            if(name && unit && target > 0) { subjects.push({ id: Date.now() + name, name, category, unit, target, completed: 0, totalTime: 0 }); onDataChange(); document.getElementById('newSubjectName').value = ''; document.getElementById('newSubjectUnit').value = ''; document.getElementById('newSubjectTarget').value = ''; }
+            else alert("请填写完整");
+        };
+        document.getElementById('addTaskBtn').onclick = addWeekTask;
+        document.getElementById('clearAllTasksBtn').onclick = clearAllTasks;
+        document.getElementById('addRestTaskBtn').onclick = addRestTask;
+        document.getElementById('resetOrderBtn').onclick = resetOrder;
+        document.getElementById('addScoreBtn').onclick = () => { let sid = document.getElementById('scoreSubjectSelect').value; let score = parseInt(document.getElementById('scoreValue').value); if(score >= 0 && score <= 100) { scores.push({ subjectId: sid, score, dateStr: getTodayStr() }); onDataChange(); document.getElementById('scoreValue').value = ''; } else alert("0-100"); };
+        document.getElementById('addPointsBtn').onclick = () => { let p = parseInt(prompt("增加积分:")); if(p > 0) { totalPoints += p; onDataChange(); showToast(`+${p}积分`); } };
+        document.getElementById('deductPointsBtn').onclick = () => { let p = parseInt(prompt("扣除积分:")); if(p > 0) { totalPoints = Math.max(0, totalPoints - p); onDataChange(); showToast(`-${p}积分`); } };
+        document.getElementById('scoreMathBtn').onclick = () => { currentScoreCategory = 'math'; updateScoreChart(); };
+        document.getElementById('scoreChineseBtn').onclick = () => { currentScoreCategory = 'chinese'; updateScoreChart(); };
+        document.getElementById('scoreEnglishBtn').onclick = () => { currentScoreCategory = 'english'; updateScoreChart(); };
+        document.getElementById('scoreSubjectSelect').innerHTML = '<option value="math">数学类</option><option value="chinese">语文类</option><option value="english">英语类</option>';
+        document.getElementById('todayDate').innerText = getTodayStr();
+        document.getElementById('todayWeekday').innerText = `(${getTodayWeekday()})`;
+        
+        document.getElementById('exportDataBtn').onclick = exportData;
+        document.getElementById('importDataBtn').onclick = () => document.getElementById('importFile').click();
+        document.getElementById('importFile').onchange = (e) => { if(e.target.files[0]) importData(e.target.files[0]); e.target.value = ''; };
+        
+        let globalTimerActive = false, globalStartTime = null;
+        document.getElementById('globalStartStudy').onclick = () => { if(globalTimerActive) { showToast("已在学习中"); return; } globalTimerActive = true; globalStartTime = Date.now(); showToast("开始学习计时"); };
+        document.getElementById('globalStopStudy').onclick = () => { if(!globalTimerActive) { showToast("未开始学习"); return; } let minutes = (Date.now() - globalStartTime) / 1000 / 60; if(minutes >= 0.5) { let earnPoints = Math.floor(minutes * 0.5); totalPoints += earnPoints; onDataChange(); showToast(`学习了${Math.round(minutes)}分钟，+${earnPoints}积分`); } else { showToast("时间太短"); } globalTimerActive = false; globalStartTime = null; };
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => { btn.onclick = function() { let id = this.dataset.tab; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); this.classList.add('active'); document.getElementById(id).classList.add('active'); if(id === 'tab3') setTimeout(() => updateCharts(), 100); if(id === 'tab2') renderTodayTasks(); if(id === 'tab4') { renderRewardItems(); renderBadges(); } }; });
+        
+        let rewardModal = document.getElementById('addRewardModal');
+        document.getElementById('showAddRewardBtn').onclick = () => { rewardModal.style.display = 'flex'; };
+        document.getElementById('cancelRewardBtn').onclick = () => { rewardModal.style.display = 'none'; };
+        document.getElementById('confirmRewardBtn').onclick = () => { let name = document.getElementById('rewardNameInput').value.trim(); let points = parseInt(document.getElementById('rewardPointsInput').value); if(name && points > 0) { rewardItems.push({ id: Date.now() + 'r', name, points }); onDataChange(); rewardModal.style.display = 'none'; document.getElementById('rewardNameInput').value = ''; document.getElementById('rewardPointsInput').value = ''; showToast("奖励项目已添加"); } else alert("请填写完整"); };
+        
+        let badgeModal = document.getElementById('addBadgeModal');
+        let selectedIcon = '🏅', selectedColor = '#f59e0b';
+        document.getElementById('showAddBadgeBtn').onclick = () => { let subjectSelect = document.getElementById('badgeConditionSubject'); subjectSelect.innerHTML = '<option value="">选择科目</option>' + subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join(''); badgeModal.style.display = 'flex'; };
+        document.getElementById('cancelBadgeBtn').onclick = () => { badgeModal.style.display = 'none'; };
+        document.querySelectorAll('#iconPicker .icon-option').forEach(el => { el.onclick = () => { document.querySelectorAll('#iconPicker .icon-option').forEach(i => i.classList.remove('selected')); el.classList.add('selected'); selectedIcon = el.innerText; }; });
+        document.querySelectorAll('#colorPicker .color-option').forEach(el => { el.onclick = () => { document.querySelectorAll('#colorPicker .color-option').forEach(i => i.classList.remove('selected')); el.classList.add('selected'); selectedColor = el.style.backgroundColor; }; });
+        document.querySelector('#iconPicker .icon-option')?.classList.add('selected');
+        document.querySelector('#colorPicker .color-option')?.classList.add('selected');
+        document.getElementById('badgeConditionType').onchange = function() { document.getElementById('badgeConditionSubject').style.display = this.value === 'subjectProgress' ? 'block' : 'none'; };
+        document.getElementById('confirmBadgeBtn').onclick = () => { let name = document.getElementById('badgeNameInput').value.trim(); let conditionType = document.getElementById('badgeConditionType').value; let conditionValue = parseInt(document.getElementById('badgeConditionValue').value); let conditionSubject = conditionType === 'subjectProgress' ? document.getElementById('badgeConditionSubject').value : null; if(!name || !conditionValue || conditionValue <= 0) { alert("请填写完整"); return; } if(conditionType === 'subjectProgress' && !conditionSubject) { alert("请选择科目"); return; } badges.push({ id: Date.now() + 'b', name, icon: selectedIcon, color: selectedColor, conditionType, conditionValue, conditionSubject, earned: false, progress: 0 }); onDataChange(); badgeModal.style.display = 'none'; document.getElementById('badgeNameInput').value = ''; document.getElementById('badgeConditionValue').value = ''; showToast("勋章已添加"); };
+        
+        setInterval(() => { let last = localStorage.getItem('lastSportWeek'); let week = Math.floor(Date.now() / 604800000); if(last != week) { showToast("🏃 运动提醒：本周运动20分钟！"); localStorage.setItem('lastSportWeek', week); } }, 3600000);
+        if(Notification.permission !== "denied") Notification.requestPermission();
+        
+        // 初始化
+        charts = {};
+        loadFromLocal();
+        refreshUI();
+        checkAllBadgesProgress();
+        showToast("工具已加载，数据保存在本地");
+    </script>
+</body>
+</html>
